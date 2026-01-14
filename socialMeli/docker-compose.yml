@@ -5,9 +5,9 @@ services:
     image: postgres:15-alpine
     container_name: postgres_db
     environment:
-      POSTGRES_USER: kim
-      POSTGRES_PASSWORD: kim78%
-      POSTGRES_DB: apiSocialMeli
+      POSTGRES_USER: ${DB_USER:-kim}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-kim78%}
+      POSTGRES_DB: ${DB_NAME:-apiSocialMeli}
     ports:
       - "5432:5432"
     volumes:
@@ -15,10 +15,13 @@ services:
     networks:
       - socialmeli-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U socialMeli"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-kim}"]
       interval: 10s
       timeout: 5s
       retries: 5
 
 volumes:
   postgres_data:
+
+networks:
+  socialmeli-network:
