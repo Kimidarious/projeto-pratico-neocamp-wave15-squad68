@@ -4,14 +4,6 @@ import (
 	"time"
 )
 
-type UserType string
-
-const (
-	UserTypeBuyer  UserType = "BUYER"
-	UserTypeSeller UserType = "SELLER"
-	UserTypeBoth   UserType = "BOTH"
-)
-
 type User struct {
 	UserID    uint      `gorm:"primaryKey;column:user_id" json:"user_id"`
 	UserName  string    `gorm:"size:15;not null;unique;column:user_name" json:"user_name"`
