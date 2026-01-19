@@ -1,102 +1,116 @@
 package handler
 
 import (
-    "net/http"
-    "strconv"
-    
-    "github.com/gin-gonic/gin"
-    "github.com/Kimidarious/projeto-pratico-neocamp-wave15-squad68.git/internal/dto/request"
-    "github.com/Kimidarious/projeto-pratico-neocamp-wave15-squad68.git/internal/service"
+	"net/http"
+	"strconv"
+
+	"github.com/gin-gonic/gin"
+
+	"github.com/Kimidarious/projeto-pratico-neocamp-wave15-squad68.git/internal/service"
 )
 
-type UserCRUDHandler struct {
-    userService service.UserService
+type UserHandler struct {
+	followService service.FollowService
 }
 
-func NewUserCRUDHandler(userService service.UserService) *UserCRUDHandler {
-    return &UserCRUDHandler{
-        userService: userService,
-    }
-}
-
-func (h *UserCRUDHandler) CreateUser(c *gin.Context) {
-    var req request.CreateUserRequest
-    
-    if err := c.ShouldBindJSON(&req); err != nil {
-        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-        return
-    }
-    
-    user, err := h.userService.CreateUser(req.UserName, req.UserType)
-    if err != nil {
-        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-        return
-    }
-    
-    c.JSON(http.StatusCreated, user)
-}
-
-func (h *UserCRUDHandler) GetUser(c *gin.Context) {
-    id, err := strconv.ParseUint(c.Param("id"), 10, 32)
-    if err != nil {
-        c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
-        return
-    }
-    
-    user, err := h.userService.GetUserByID(uint(id))
-    if err != nil {
-        c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-        return
-    }
-    
-    c.JSON(http.StatusOK, user)
-}
-
-func (h *UserCRUDHandler) GetAllUsers(c *gin.Context) {
-    users, err := h.userService.GetAllUsers()
-    if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-        return
-    }
-    
-    c.JSON(http.StatusOK, users)
+func NewUserHandler(followService service.FollowService) *UserHandler {
+	return &UserHandler{
+		followService: followService,
+	}
 }
 
 
-func (h *UserCRUDHandler) UpdateUser(c *gin.Context) {
-    id, err := strconv.ParseUint(c.Param("id"), 10, 32)
-    if err != nil {
-        c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
-        return
-    }
-    
-    var req request.UpdateUserRequest
-    if err := c.ShouldBindJSON(&req); err != nil {
-        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-        return
-    }
-    
-    user, err := h.userService.UpdateUser(uint(id), req.UserName, req.UserType)
-    if err != nil {
-        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-        return
-    }
-    
-    c.JSON(http.StatusOK, user)
+func (h *UserHandler) FollowUser(c *gin.Context) {
+	followerID, err := strconv.ParseUint(c.Param("userId"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	followedID, err := strconv.ParseUint(c.Param("userIdToFollow"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID to follow"})
+		return
+	}
+
+	if err := h.followService.FollowUser(uint(followerID), uint(followedID)); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Successfully followed user"})
+}
+
+func (h *UserHandler) UnfollowUser(c *gin.Context) {
+	followerID, err := strconv.ParseUint(c.Param("userId"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	followedID, err := strconv.ParseUint(c.Param("userIdToFollow"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID to unfollow"})
+		return
+	}
+
+	if err := h.followService.UnfollowUser(uint(followerID), uint(followedID)); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Successfully unfollowed user"})
+}
+
+func (h *UserHandler) GetFollowersCount(c *gin.Context) {
+	userID, err := strconv.ParseUint(c.Param("userId"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	result, err := h.followService.GetFollowersCount(uint(userID))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, result)
+}
+
+func (h *UserHandler) GetFollowersList(c *gin.Context) {
+	userID, err := strconv.ParseUint(c.Param("userId"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	order := c.DefaultQuery("order", "name_asc")
+
+	result, err := h.followService.GetFollowersList(uint(userID), order)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, result)
 }
 
 
-func (h *UserCRUDHandler) DeleteUser(c *gin.Context) {
-    id, err := strconv.ParseUint(c.Param("id"), 10, 32)
-    if err != nil {
-        c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
-        return
-    }
-    
-    if err := h.userService.DeleteUser(uint(id)); err != nil {
-        c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-        return
-    }
-    
-    c.Status(http.StatusNoContent)
+func (h *UserHandler) GetFollowedList(c *gin.Context) {
+	userID, err := strconv.ParseUint(c.Param("userId"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	order := c.DefaultQuery("order", "name_asc")
+
+	result, err := h.followService.GetFollowedList(uint(userID), order)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, result)
 }
