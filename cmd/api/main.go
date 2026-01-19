@@ -20,14 +20,12 @@ import (
 func main() {
 	loadEnv()
 
-	
 	db, err := database.Connect()
 	if err != nil {
 		log.Fatalf("❌ Failed to connect to database: %v", err)
 	}
 	defer database.Close()
 
-	
 	log.Println("🔄 Running migrations...")
 	if err := database.AutoMigrate(
 		db,
@@ -38,46 +36,83 @@ func main() {
 	); err != nil {
 		log.Fatalf("❌ Failed to migrate database: %v", err)
 	}
-	log.Println("✅ Migrations completed")
-
+	log.Println("✅ Migrations completed successfully")
 
 	userRepo := repository.NewUserRepository(db)
-	
+	followRepo := repository.NewFollowRepository(db)
+	productRepo := repository.NewProductRepository(db)
+	postRepo := repository.NewPostRepository(db)
+
 	userService := service.NewUserService(userRepo)
-	
+	followService := service.NewFollowService(followRepo, userRepo)
+	postService := service.NewPostService(postRepo, productRepo, userRepo, followRepo)
+
 	userCRUDHandler := handler.NewUserCRUDHandler(userService)
-		
+	userHandler := handler.NewUserHandler(followService)
+	productHandler := handler.NewProductHandler(postService)
+
 	r := gin.Default()
+
 	r.Use(middleware.CORS())
 
-
-	r.GET("/health", func(ctx *gin.Context) {
-		ctx.JSON(200, gin.H{
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(200, gin.H{
 			"status":  "ok",
-			"message": "API is running",
+			"message": "SocialMeli API is running",
+			"version": "1.0",
 		})
 	})
-	
+
 	v1 := r.Group("/api/v1")
 	{
 		users := v1.Group("/users")
 		{
-			users.POST("", userCRUDHandler.CreateUser)
-			users.GET("", userCRUDHandler.GetAllUsers)
-			users.GET("/:id", userCRUDHandler.GetUser)
-			users.PUT("/:id", userCRUDHandler.UpdateUser)
-			users.DELETE("/:id", userCRUDHandler.DeleteUser)
+
+			users.POST("/:id/follow/:userIdToFollow", userHandler.FollowUser)
+
+			users.POST("/:id/unfollow/:userIdToFollow", userHandler.UnfollowUser)
+
+			users.GET("/:id/followers/count", userHandler.GetFollowersCount)
+
+			users.GET("/:id/followers/list", userHandler.GetFollowersList)
+
+			users.GET("/:id/followed/list", userHandler.GetFollowedList)
+
+			users.POST("", userCRUDHandler.CreateUser)           // CREATE
+			users.GET("", userCRUDHandler.GetAllUsers)           // READ ALL
+			users.GET("/:id", userCRUDHandler.GetUser)           // READ ONE (por último!)
+			users.PUT("/:id", userCRUDHandler.UpdateUser)        // UPDATE
+			users.DELETE("/:id", userCRUDHandler.DeleteUser)     // DELETE
+		}
+
+		products := v1.Group("/products")
+		{
+			products.POST("/post", productHandler.CreatePost)
+
+			products.POST("/promo-post", productHandler.CreatePromoPost)
+
+			products.GET("/followed/:userId/list", productHandler.GetFollowedPosts)
+
+			products.GET("/:id/countPromo", productHandler.CountPromoProducts)
 		}
 	}
 
-
-	port := "8080"
-	log.Println("===========================================")
-	log.Printf("🚀 Server running on http://localhost:%s", port)
-	log.Printf("📋 Health Check: http://localhost:%s/health", port)
-	log.Printf("👤 Users API: http://localhost:%s/api/v1/users", port)
-	log.Println("===========================================")
+	port := getEnv("SERVER_PORT", "8080")
 	
+	log.Println("=================================================")
+	log.Printf("🚀 SocialMeli API Server")
+	log.Println("=================================================")
+	log.Printf("📡 Server:    http://localhost:%s", port)
+	log.Printf("🏥 Health:    http://localhost:%s/health", port)
+	log.Printf("📚 API v1:    http://localhost:%s/api/v1", port)
+	log.Println("-------------------------------------------------")
+	log.Printf("👤 Users:     http://localhost:%s/api/v1/users", port)
+	log.Printf("📦 Products:  http://localhost:%s/api/v1/products", port)
+	log.Println("=================================================")
+	log.Println("✅ Server is ready to accept connections")
+	log.Println("🔄 Press CTRL+C to stop")
+	log.Println("=================================================")
+
 	if err := r.Run(":" + port); err != nil {
 		log.Fatalf("❌ Failed to start server: %v", err)
 	}
@@ -90,7 +125,6 @@ func loadEnv() {
 	} else {
 		log.Printf("⚠️  Could not load .env from current directory: %v", err)
 	}
-
 
 	wd, err := os.Getwd()
 	if err != nil {
@@ -120,4 +154,11 @@ func loadEnv() {
 	}
 
 	log.Println("⚠️  .env file not found, using environment variables")
+}
+
+func getEnv(key, defaultValue string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return defaultValue
 }

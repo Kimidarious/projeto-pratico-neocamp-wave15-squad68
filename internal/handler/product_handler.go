@@ -20,7 +20,6 @@ func NewProductHandler(postService service.PostService) *ProductHandler {
 	}
 }
 
-
 func (h *ProductHandler) CreatePost(c *gin.Context) {
 	var req request.CreatePostRequest
 
@@ -36,7 +35,6 @@ func (h *ProductHandler) CreatePost(c *gin.Context) {
 
 	c.Status(http.StatusCreated)
 }
-
 
 func (h *ProductHandler) CreatePromoPost(c *gin.Context) {
 	var req request.CreatePromoPostRequest
@@ -54,9 +52,8 @@ func (h *ProductHandler) CreatePromoPost(c *gin.Context) {
 	c.Status(http.StatusCreated)
 }
 
-
 func (h *ProductHandler) GetFollowedPosts(c *gin.Context) {
-	userID, err := strconv.ParseUint(c.Param("userId"), 10, 32)
+	userID, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
 		return
@@ -73,9 +70,8 @@ func (h *ProductHandler) GetFollowedPosts(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
-
 func (h *ProductHandler) CountPromoProducts(c *gin.Context) {
-	userID, err := strconv.ParseUint(c.Param("userId"), 10, 32)
+	userID, err := strconv.ParseUint(c.Param("id"), 10, 32) // ← MUDOU
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
 		return
