@@ -20,7 +20,7 @@ func NewUserHandler(followService service.FollowService) *UserHandler {
 }
 
 func (h *UserHandler) FollowUser(c *gin.Context) {
-	followerID, err := strconv.ParseUint(c.Param("id"), 10, 32) // ← MUDOU de userId para id
+	followerID, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
 		return
@@ -41,7 +41,7 @@ func (h *UserHandler) FollowUser(c *gin.Context) {
 }
 
 func (h *UserHandler) UnfollowUser(c *gin.Context) {
-	followerID, err := strconv.ParseUint(c.Param("id"), 10, 32) // ← MUDOU
+	followerID, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
 		return
@@ -62,7 +62,7 @@ func (h *UserHandler) UnfollowUser(c *gin.Context) {
 }
 
 func (h *UserHandler) GetFollowersCount(c *gin.Context) {
-	userID, err := strconv.ParseUint(c.Param("id"), 10, 32) // ← MUDOU
+	userID, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
 		return
@@ -78,7 +78,7 @@ func (h *UserHandler) GetFollowersCount(c *gin.Context) {
 }
 
 func (h *UserHandler) GetFollowersList(c *gin.Context) {
-	userID, err := strconv.ParseUint(c.Param("id"), 10, 32) // ← MUDOU
+	userID, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
 		return
@@ -96,7 +96,7 @@ func (h *UserHandler) GetFollowersList(c *gin.Context) {
 }
 
 func (h *UserHandler) GetFollowedList(c *gin.Context) {
-	userID, err := strconv.ParseUint(c.Param("id"), 10, 32) // ← MUDOU
+	userID, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
 		return

@@ -71,7 +71,7 @@ func (h *ProductHandler) GetFollowedPosts(c *gin.Context) {
 }
 
 func (h *ProductHandler) CountPromoProducts(c *gin.Context) {
-	userID, err := strconv.ParseUint(c.Param("id"), 10, 32) // ← MUDOU
+	userID, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
 		return

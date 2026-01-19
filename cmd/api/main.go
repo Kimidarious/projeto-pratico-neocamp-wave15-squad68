@@ -76,13 +76,13 @@ func main() {
 
 			users.GET("/:id/followers/list", userHandler.GetFollowersList)
 
-			users.GET("/:id/followed/list", userHandler.GetFollowedList)
+			users.GET(":id/followed/list", userHandler.GetFollowedList)
 
-			users.POST("", userCRUDHandler.CreateUser)           // CREATE
-			users.GET("", userCRUDHandler.GetAllUsers)           // READ ALL
-			users.GET("/:id", userCRUDHandler.GetUser)           // READ ONE (por último!)
-			users.PUT("/:id", userCRUDHandler.UpdateUser)        // UPDATE
-			users.DELETE("/:id", userCRUDHandler.DeleteUser)     // DELETE
+			users.POST("", userCRUDHandler.CreateUser)
+			users.GET("", userCRUDHandler.GetAllUsers)
+			users.GET("/:id", userCRUDHandler.GetUser)      
+			users.PUT("/:id", userCRUDHandler.UpdateUser)    
+			users.DELETE("/:id", userCRUDHandler.DeleteUser)   
 		}
 
 		products := v1.Group("/products")
@@ -91,7 +91,7 @@ func main() {
 
 			products.POST("/promo-post", productHandler.CreatePromoPost)
 
-			products.GET("/followed/:userId/list", productHandler.GetFollowedPosts)
+			products.GET("/followed/:id/list", productHandler.GetFollowedPosts)
 
 			products.GET("/:id/countPromo", productHandler.CountPromoProducts)
 		}
