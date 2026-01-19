@@ -12,4 +12,5 @@ type PostRepository interface {
 	GetPostsByUser(userID uint) ([]*domain.Post, error)
 	GetPostsByUsersInDateRange(userIDs []uint, startDate, endDate time.Time, order string) ([]*domain.Post, error)
 	CountPromoPostsByUser(userID uint) int64
+	GetPromoPostsByUser(userID uint) ([]*domain.Post, error)
 }

@@ -71,3 +71,12 @@ func (r *postRepositoryImpl) CountPromoPostsByUser(userID uint) int64 {
 		Count(&count)
 	return count
 }
+
+func (r *postRepositoryImpl) GetPromoPostsByUser(userID uint) ([]*domain.Post, error) {
+	var posts []*domain.Post
+	err := r.db.Preload("Product").
+		Where("user_id = ? AND has_promo = ?", userID, true).
+		Order("date DESC").
+		Find(&posts).Error
+	return posts, err
+}

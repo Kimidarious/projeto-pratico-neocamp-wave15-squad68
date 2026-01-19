@@ -15,6 +15,7 @@ type PostService interface {
 	CreatePromoPost(req request.CreatePromoPostRequest) error
 	GetFollowedPosts(userID uint, order string) (*response.PostListResponse, error)
 	CountPromoProducts(userID uint) (*response.PromoCountResponse, error)
+	GetPromoPostsByUser(userID uint) (*response.PostListResponse, error)
 }
 
 type postServiceImpl struct {
@@ -195,5 +196,43 @@ func (s *postServiceImpl) CountPromoProducts(userID uint) (*response.PromoCountR
 		UserID:             user.UserID,
 		UserName:           user.UserName,
 		PromoProductsCount: count,
+	}, nil
+}
+
+func (s *postServiceImpl) GetPromoPostsByUser(userID uint) (*response.PostListResponse, error) {
+	
+	if !s.userRepo.ExistsByID(userID) {
+		return nil, errors.New("user not found")
+	}
+
+	posts, err := s.postRepo.GetPromoPostsByUser(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	postsDTO := make([]response.PostDTO, len(posts))
+	for i, p := range posts {
+		postsDTO[i] = response.PostDTO{
+			PostID:   p.PostID,
+			UserID:   p.UserID,
+			Date:     p.Date.Format("02-01-2006"),
+			Category: p.Category,
+			Price:    p.Price,
+			HasPromo: p.HasPromo,
+			Discount: p.Discount,
+			Product: response.ProductDTO{
+				ProductID:   p.Product.ProductID,
+				ProductName: p.Product.ProductName,
+				Type:        p.Product.Type,
+				Brand:       p.Product.Brand,
+				Color:       p.Product.Color,
+				Notes:       p.Product.Notes,
+			},
+		}
+	}
+
+	return &response.PostListResponse{
+		UserID: userID,
+		Posts:  postsDTO,
 	}, nil
 }

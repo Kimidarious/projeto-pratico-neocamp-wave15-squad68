@@ -94,6 +94,8 @@ func main() {
 			products.GET("/followed/:id/list", productHandler.GetFollowedPosts)
 
 			products.GET("/:id/countPromo", productHandler.CountPromoProducts)
+
+			products.GET("/:id/promos", productHandler.GetPromoPostsByUser)
 		}
 	}
 
