@@ -1,0 +1,702 @@
+basePath: /api/v1
+definitions:
+  domain.User:
+    properties:
+      created_at:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+      user_name:
+        type: string
+      user_type:
+        $ref: '#/definitions/domain.UserType'
+    type: object
+  domain.UserType:
+    enum:
+    - BUYER
+    - SELLER
+    - BOTH
+    type: string
+    x-enum-varnames:
+    - UserTypeBuyer
+    - UserTypeSeller
+    - UserTypeBoth
+  request.CreatePostRequest:
+    properties:
+      category:
+        type: integer
+      date:
+        type: string
+      price:
+        type: number
+      product:
+        $ref: '#/definitions/request.ProductRequest'
+      user_id:
+        type: integer
+    required:
+    - category
+    - date
+    - price
+    - product
+    - user_id
+    type: object
+  request.CreatePromoPostRequest:
+    properties:
+      category:
+        type: integer
+      date:
+        type: string
+      discount:
+        maximum: 100
+        minimum: 0
+        type: number
+      has_promo:
+        type: boolean
+      price:
+        type: number
+      product:
+        $ref: '#/definitions/request.ProductRequest'
+      user_id:
+        type: integer
+    required:
+    - category
+    - date
+    - price
+    - product
+    - user_id
+    type: object
+  request.CreateUserRequest:
+    properties:
+      user_name:
+        maxLength: 15
+        minLength: 3
+        type: string
+      user_type:
+        $ref: '#/definitions/domain.UserType'
+    required:
+    - user_name
+    - user_type
+    type: object
+  request.ProductRequest:
+    properties:
+      brand:
+        maxLength: 50
+        type: string
+      color:
+        maxLength: 20
+        type: string
+      notes:
+        type: string
+      product_name:
+        maxLength: 40
+        type: string
+      type:
+        maxLength: 15
+        type: string
+    required:
+    - product_name
+    - type
+    type: object
+  request.UpdateUserRequest:
+    properties:
+      user_name:
+        maxLength: 15
+        minLength: 3
+        type: string
+      user_type:
+        $ref: '#/definitions/domain.UserType'
+    type: object
+  response.FollowedListResponse:
+    properties:
+      followed:
+        items:
+          $ref: '#/definitions/response.UserDTO'
+        type: array
+      user_id:
+        type: integer
+      user_name:
+        type: string
+    type: object
+  response.FollowersCountResponse:
+    properties:
+      followers_count:
+        type: integer
+      user_id:
+        type: integer
+      user_name:
+        type: string
+    type: object
+  response.FollowersListResponse:
+    properties:
+      followers:
+        items:
+          $ref: '#/definitions/response.UserDTO'
+        type: array
+      user_id:
+        type: integer
+      user_name:
+        type: string
+    type: object
+  response.PostDTO:
+    properties:
+      category:
+        type: integer
+      date:
+        type: string
+      discount:
+        type: number
+      has_promo:
+        type: boolean
+      post_id:
+        type: integer
+      price:
+        type: number
+      product:
+        $ref: '#/definitions/response.ProductDTO'
+      user_id:
+        type: integer
+    type: object
+  response.PostListResponse:
+    properties:
+      posts:
+        items:
+          $ref: '#/definitions/response.PostDTO'
+        type: array
+      user_id:
+        type: integer
+    type: object
+  response.ProductDTO:
+    properties:
+      brand:
+        type: string
+      color:
+        type: string
+      notes:
+        type: string
+      product_id:
+        type: integer
+      product_name:
+        type: string
+      type:
+        type: string
+    type: object
+  response.PromoCountResponse:
+    properties:
+      promo_products_count:
+        type: integer
+      user_id:
+        type: integer
+      user_name:
+        type: string
+    type: object
+  response.UserDTO:
+    properties:
+      user_id:
+        type: integer
+      user_name:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: suporte@socialmeli.com
+    name: Suporte API
+  description: API REST para rede social do Mercado Livre
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: SocialMeli API
+  version: "1.0"
+paths:
+  /products/{id}/countPromo:
+    get:
+      consumes:
+      - application/json
+      description: Retorna a quantidade de produtos promocionais de um vendedor (US-0011)
+      parameters:
+      - description: ID do usuário
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.PromoCountResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Contar produtos em promoção
+      tags:
+      - products
+  /products/{id}/promos:
+    get:
+      consumes:
+      - application/json
+      description: Retorna todos os produtos em promoção de um vendedor (US-0012)
+      parameters:
+      - description: ID do usuário
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.PostListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Listar produtos promocionais
+      tags:
+      - products
+  /products/followed/{id}/list:
+    get:
+      consumes:
+      - application/json
+      description: Retorna publicações dos vendedores seguidos nas últimas 2 semanas
+        (US-0006, US-0009)
+      parameters:
+      - description: ID do usuário
+        in: path
+        name: id
+        required: true
+        type: integer
+      - default: date_desc
+        description: 'Ordenação: date_asc ou date_desc'
+        in: query
+        name: order
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.PostListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Obter feed de publicações
+      tags:
+      - products
+  /products/post:
+    post:
+      consumes:
+      - application/json
+      description: Cria uma nova publicação de produto (US-0005)
+      parameters:
+      - description: Dados da publicação
+        in: body
+        name: post
+        required: true
+        schema:
+          $ref: '#/definitions/request.CreatePostRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Criar publicação
+      tags:
+      - products
+  /products/promo-post:
+    post:
+      consumes:
+      - application/json
+      description: Cria uma publicação de produto com promoção (US-0010)
+      parameters:
+      - description: Dados da publicação promocional
+        in: body
+        name: post
+        required: true
+        schema:
+          $ref: '#/definitions/request.CreatePromoPostRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Criar publicação promocional
+      tags:
+      - products
+  /users:
+    get:
+      consumes:
+      - application/json
+      description: Retorna a lista completa de usuários cadastrados
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.User'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Listar todos os usuários
+      tags:
+      - users-crud
+    post:
+      consumes:
+      - application/json
+      description: Cria um novo usuário no sistema (comprador, vendedor ou ambos)
+      parameters:
+      - description: Dados do usuário
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/request.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/domain.User'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Criar novo usuário
+      tags:
+      - users-crud
+  /users/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove um usuário do sistema
+      parameters:
+      - description: ID do usuário
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Deletar usuário
+      tags:
+      - users-crud
+    get:
+      consumes:
+      - application/json
+      description: Retorna os dados de um usuário específico
+      parameters:
+      - description: ID do usuário
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.User'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Buscar usuário por ID
+      tags:
+      - users-crud
+    put:
+      consumes:
+      - application/json
+      description: Atualiza os dados de um usuário existente
+      parameters:
+      - description: ID do usuário
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Dados a atualizar
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/request.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.User'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Atualizar usuário
+      tags:
+      - users-crud
+  /users/{id}/follow/{userIdToFollow}:
+    post:
+      consumes:
+      - application/json
+      description: Permite que um usuário siga um vendedor (US-0001)
+      parameters:
+      - description: ID do usuário que vai seguir
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: ID do usuário a ser seguido
+        in: path
+        name: userIdToFollow
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Seguir um vendedor
+      tags:
+      - users-follow
+  /users/{id}/followed/list:
+    get:
+      consumes:
+      - application/json
+      description: Retorna a lista de vendedores que um usuário segue (US-0004, US-0008)
+      parameters:
+      - description: ID do usuário
+        in: path
+        name: id
+        required: true
+        type: integer
+      - default: name_asc
+        description: 'Ordenação: name_asc ou name_desc'
+        in: query
+        name: order
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.FollowedListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Listar seguidos
+      tags:
+      - users-followers
+  /users/{id}/followers/count:
+    get:
+      consumes:
+      - application/json
+      description: Retorna o número de seguidores de um vendedor (US-0002)
+      parameters:
+      - description: ID do usuário
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.FollowersCountResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Obter contagem de seguidores
+      tags:
+      - users-followers
+  /users/{id}/followers/list:
+    get:
+      consumes:
+      - application/json
+      description: Retorna a lista de usuários que seguem um vendedor (US-0003, US-0008)
+      parameters:
+      - description: ID do usuário
+        in: path
+        name: id
+        required: true
+        type: integer
+      - default: name_asc
+        description: 'Ordenação: name_asc ou name_desc'
+        in: query
+        name: order
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.FollowersListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Listar seguidores
+      tags:
+      - users-followers
+  /users/{id}/unfollow/{userIdToFollow}:
+    post:
+      consumes:
+      - application/json
+      description: Remove o vínculo de follow entre usuários (US-0007)
+      parameters:
+      - description: ID do usuário que vai deixar de seguir
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: ID do usuário a ser deixado de seguir
+        in: path
+        name: userIdToFollow
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Deixar de seguir um vendedor
+      tags:
+      - users-follow
+schemes:
+- http
+- https
+swagger: "2.0"

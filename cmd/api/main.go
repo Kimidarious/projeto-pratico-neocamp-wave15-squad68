@@ -1,3 +1,18 @@
+// @title           SocialMeli API
+// @version         1.0
+// @description     API REST para rede social do Mercado Livre
+// @termsOfService  http://swagger.io/terms/
+
+// @contact.name   Suporte API
+// @contact.email  suporte@socialmeli.com
+
+// @license.name  Apache 2.0
+// @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @host      localhost:8080
+// @BasePath  /api/v1
+
+// @schemes http https
 package main
 
 import (
@@ -8,14 +23,18 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+
 	"github.com/Kimidarious/projeto-pratico-neocamp-wave15-squad68.git/internal/database"
 	"github.com/Kimidarious/projeto-pratico-neocamp-wave15-squad68.git/internal/domain"
 	"github.com/Kimidarious/projeto-pratico-neocamp-wave15-squad68.git/internal/handler"
 	"github.com/Kimidarious/projeto-pratico-neocamp-wave15-squad68.git/internal/middleware"
 	"github.com/Kimidarious/projeto-pratico-neocamp-wave15-squad68.git/internal/repository"
 	"github.com/Kimidarious/projeto-pratico-neocamp-wave15-squad68.git/internal/service"
-)
 
+	_ "github.com/Kimidarious/projeto-pratico-neocamp-wave15-squad68.git/docs"
+)
 
 func main() {
 	loadEnv()
@@ -80,9 +99,9 @@ func main() {
 
 			users.POST("", userCRUDHandler.CreateUser)
 			users.GET("", userCRUDHandler.GetAllUsers)
-			users.GET("/:id", userCRUDHandler.GetUser)      
-			users.PUT("/:id", userCRUDHandler.UpdateUser)    
-			users.DELETE("/:id", userCRUDHandler.DeleteUser)   
+			users.GET("/:id", userCRUDHandler.GetUser)
+			users.PUT("/:id", userCRUDHandler.UpdateUser)
+			users.DELETE("/:id", userCRUDHandler.DeleteUser)
 		}
 
 		products := v1.Group("/products")
@@ -99,8 +118,13 @@ func main() {
 		}
 	}
 
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	r.GET("/docs", func(c *gin.Context) {
+		c.Redirect(302, "/swagger/index.html")
+	})
+
 	port := getEnv("SERVER_PORT", "8080")
-	
+
 	log.Println("=================================================")
 	log.Printf("🚀 SocialMeli API Server")
 	log.Println("=================================================")

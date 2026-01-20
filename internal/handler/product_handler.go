@@ -20,7 +20,16 @@ func NewProductHandler(postService service.PostService) *ProductHandler {
 	}
 }
 
-// US-0005: Create Post
+// CreatePost godoc
+// @Summary      Criar publicação
+// @Description  Cria uma nova publicação de produto (US-0005)
+// @Tags         products
+// @Accept       json
+// @Produce      json
+// @Param        post  body  request.CreatePostRequest  true  "Dados da publicação"
+// @Success      201
+// @Failure      400  {object}  map[string]string
+// @Router       /products/post [post]
 func (h *ProductHandler) CreatePost(c *gin.Context) {
 	var req request.CreatePostRequest
 
@@ -37,7 +46,16 @@ func (h *ProductHandler) CreatePost(c *gin.Context) {
 	c.Status(http.StatusCreated)
 }
 
-// US-0010: Create Promo Post
+// CreatePromoPost godoc
+// @Summary      Criar publicação promocional
+// @Description  Cria uma publicação de produto com promoção (US-0010)
+// @Tags         products
+// @Accept       json
+// @Produce      json
+// @Param        post  body  request.CreatePromoPostRequest  true  "Dados da publicação promocional"
+// @Success      201
+// @Failure      400  {object}  map[string]string
+// @Router       /products/promo-post [post]
 func (h *ProductHandler) CreatePromoPost(c *gin.Context) {
 	var req request.CreatePromoPostRequest
 
@@ -54,7 +72,18 @@ func (h *ProductHandler) CreatePromoPost(c *gin.Context) {
 	c.Status(http.StatusCreated)
 }
 
-// US-0006 + US-0009: Get Followed Posts
+// GetFollowedPosts godoc
+// @Summary      Obter feed de publicações
+// @Description  Retorna publicações dos vendedores seguidos nas últimas 2 semanas (US-0006, US-0009)
+// @Tags         products
+// @Accept       json
+// @Produce      json
+// @Param        id     path      int     true   "ID do usuário"
+// @Param        order  query     string  false  "Ordenação: date_asc ou date_desc"  default(date_desc)
+// @Success      200    {object}  response.PostListResponse
+// @Failure      400    {object}  map[string]string
+// @Failure      404    {object}  map[string]string
+// @Router       /products/followed/{id}/list [get]
 func (h *ProductHandler) GetFollowedPosts(c *gin.Context) {
 	userID, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
@@ -73,7 +102,17 @@ func (h *ProductHandler) GetFollowedPosts(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
-// US-0011: Count Promo Products
+// CountPromoProducts godoc
+// @Summary      Contar produtos em promoção
+// @Description  Retorna a quantidade de produtos promocionais de um vendedor (US-0011)
+// @Tags         products
+// @Accept       json
+// @Produce      json
+// @Param        id   path      int  true  "ID do usuário"
+// @Success      200  {object}  response.PromoCountResponse
+// @Failure      400  {object}  map[string]string
+// @Failure      404  {object}  map[string]string
+// @Router       /products/{id}/countPromo [get]
 func (h *ProductHandler) CountPromoProducts(c *gin.Context) {
 	userID, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
@@ -90,14 +129,15 @@ func (h *ProductHandler) CountPromoProducts(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
-// US-0012: Listar produtos promocionais de um vendedor
+// GetPromoPostsByUser godoc
 // @Summary      Listar produtos promocionais
-// @Description  Retorna todos os produtos em promoção de um vendedor
+// @Description  Retorna todos os produtos em promoção de um vendedor (US-0012)
 // @Tags         products
 // @Accept       json
 // @Produce      json
-// @Param        id  path  int  true  "User ID"
+// @Param        id   path      int  true  "ID do usuário"
 // @Success      200  {object}  response.PostListResponse
+// @Failure      400  {object}  map[string]string
 // @Failure      404  {object}  map[string]string
 // @Router       /products/{id}/promos [get]
 func (h *ProductHandler) GetPromoPostsByUser(c *gin.Context) {
