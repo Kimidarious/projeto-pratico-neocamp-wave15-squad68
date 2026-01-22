@@ -1,238 +1,190 @@
 package service
 
 import (
-	"errors"
+	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	
 	"github.com/Kimidarious/projeto-pratico-neocamp-wave15-squad68.git/internal/domain"
 	"github.com/Kimidarious/projeto-pratico-neocamp-wave15-squad68.git/internal/dto/request"
-	"github.com/Kimidarious/projeto-pratico-neocamp-wave15-squad68.git/internal/dto/response"
-	"github.com/Kimidarious/projeto-pratico-neocamp-wave15-squad68.git/internal/repository"
+	"github.com/Kimidarious/projeto-pratico-neocamp-wave15-squad68.git/internal/repository/mocks"
 )
 
-type PostService interface {
-	CreatePost(req request.CreatePostRequest) error
-	CreatePromoPost(req request.CreatePromoPostRequest) error
-	GetFollowedPosts(userID uint, order string) (*response.PostListResponse, error)
-	CountPromoProducts(userID uint) (*response.PromoCountResponse, error)
-	GetPromoPostsByUser(userID uint) (*response.PostListResponse, error)
+func TestGetFollowedPosts_OrderDateAsc(t *testing.T) {
+	postRepoMock := new(mocks.PostRepositoryMock)
+	productRepoMock := new(mocks.ProductRepositoryMock)
+	userRepoMock := new(mocks.UserRepositoryMock)
+	followRepoMock := new(mocks.FollowRepositoryMock)
+	
+	service := NewPostService(postRepoMock, productRepoMock, userRepoMock, followRepoMock)
+	
+	userID := uint(1)
+	order := "date_asc"
+	
+	userRepoMock.On("ExistsByID", userID).Return(true)
+	
+	followedUsers := []*domain.User{
+		{UserID: 2, UserName: "maria"},
+	}
+	followRepoMock.On("GetFollowed", userID, "").Return(followedUsers, nil)
+	
+	posts := []*domain.Post{
+		{
+			PostID: 1,
+			UserID: 2,
+			Date:   time.Date(2026, 1, 10, 0, 0, 0, 0, time.UTC),
+			Product: domain.Product{ProductID: 1, ProductName: "Produto 1"},
+		},
+		{
+			PostID: 2,
+			UserID: 2,
+			Date:   time.Date(2026, 1, 15, 0, 0, 0, 0, time.UTC),
+			Product: domain.Product{ProductID: 2, ProductName: "Produto 2"},
+		},
+		{
+			PostID: 3,
+			UserID: 2,
+			Date:   time.Date(2026, 1, 20, 0, 0, 0, 0, time.UTC),
+			Product: domain.Product{ProductID: 3, ProductName: "Produto 3"},
+		},
+	}
+	
+	postRepoMock.On("GetPostsByUsersInDateRange", 
+		mock.AnythingOfType("[]uint"), 
+		mock.AnythingOfType("time.Time"), 
+		mock.AnythingOfType("time.Time"), 
+		order,
+	).Return(posts, nil)
+	
+	result, err := service.GetFollowedPosts(userID, order)
+	
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.Equal(t, 3, len(result.Posts))
+	
+	assert.Equal(t, "10-01-2026", result.Posts[0].Date) // mais antigo
+	assert.Equal(t, "15-01-2026", result.Posts[1].Date)
+	assert.Equal(t, "20-01-2026", result.Posts[2].Date) // mais recente
+	
+	postRepoMock.AssertExpectations(t)
 }
 
-type postServiceImpl struct {
-	postRepo    repository.PostRepository
-	productRepo repository.ProductRepository
-	userRepo    repository.UserRepository
-	followRepo  repository.FollowRepository
+func TestGetFollowedPosts_OrderDateDesc(t *testing.T) {
+	postRepoMock := new(mocks.PostRepositoryMock)
+	productRepoMock := new(mocks.ProductRepositoryMock)
+	userRepoMock := new(mocks.UserRepositoryMock)
+	followRepoMock := new(mocks.FollowRepositoryMock)
+	
+	service := NewPostService(postRepoMock, productRepoMock, userRepoMock, followRepoMock)
+	
+	userID := uint(1)
+	order := "date_desc"
+	
+	userRepoMock.On("ExistsByID", userID).Return(true)
+	
+	followedUsers := []*domain.User{
+		{UserID: 2, UserName: "maria"},
+	}
+	followRepoMock.On("GetFollowed", userID, "").Return(followedUsers, nil)
+	
+	posts := []*domain.Post{
+		{
+			PostID: 3,
+			UserID: 2,
+			Date:   time.Date(2026, 1, 20, 0, 0, 0, 0, time.UTC),
+			Product: domain.Product{ProductID: 3, ProductName: "Produto 3"},
+		},
+		{
+			PostID: 2,
+			UserID: 2,
+			Date:   time.Date(2026, 1, 15, 0, 0, 0, 0, time.UTC),
+			Product: domain.Product{ProductID: 2, ProductName: "Produto 2"},
+		},
+		{
+			PostID: 1,
+			UserID: 2,
+			Date:   time.Date(2026, 1, 10, 0, 0, 0, 0, time.UTC),
+			Product: domain.Product{ProductID: 1, ProductName: "Produto 1"},
+		},
+	}
+	
+	postRepoMock.On("GetPostsByUsersInDateRange", 
+		mock.AnythingOfType("[]uint"), 
+		mock.AnythingOfType("time.Time"), 
+		mock.AnythingOfType("time.Time"), 
+		order,
+	).Return(posts, nil)
+	
+	result, err := service.GetFollowedPosts(userID, order)
+	
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.Equal(t, 3, len(result.Posts))
+	
+	assert.Equal(t, "20-01-2026", result.Posts[0].Date) // mais recente
+	assert.Equal(t, "15-01-2026", result.Posts[1].Date)
+	assert.Equal(t, "10-01-2026", result.Posts[2].Date) // mais antigo
+	
+	postRepoMock.AssertExpectations(t)
 }
 
-func NewPostService(
-	postRepo repository.PostRepository,
-	productRepo repository.ProductRepository,
-	userRepo repository.UserRepository,
-	followRepo repository.FollowRepository,
-) PostService {
-	return &postServiceImpl{
-		postRepo:    postRepo,
-		productRepo: productRepo,
-		userRepo:    userRepo,
-		followRepo:  followRepo,
+func TestCreatePost_InvalidDateFormat(t *testing.T) {
+	postRepoMock := new(mocks.PostRepositoryMock)
+	productRepoMock := new(mocks.ProductRepositoryMock)
+	userRepoMock := new(mocks.UserRepositoryMock)
+	followRepoMock := new(mocks.FollowRepositoryMock)
+	
+	service := NewPostService(postRepoMock, productRepoMock, userRepoMock, followRepoMock)
+	
+	req := request.CreatePostRequest{
+		UserID: 1,
+		Date:   "2026-01-15", // formato ERRADO (deve ser dd-MM-yyyy)
+		Product: request.ProductRequest{
+			ProductName: "Teste",
+			Type:        "Teste",
+		},
+		Category: 1,
+		Price:    100,
 	}
+	
+	userRepoMock.On("ExistsByID", uint(1)).Return(true)
+	
+	err := service.CreatePost(req)
+	
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "invalid date format")
+	
+	productRepoMock.AssertNotCalled(t, "Create")
+	postRepoMock.AssertNotCalled(t, "Create")
 }
 
-
-func (s *postServiceImpl) CreatePost(req request.CreatePostRequest) error {
+func TestCreatePromoPost_InvalidDiscount(t *testing.T) {
+	postRepoMock := new(mocks.PostRepositoryMock)
+	productRepoMock := new(mocks.ProductRepositoryMock)
+	userRepoMock := new(mocks.UserRepositoryMock)
+	followRepoMock := new(mocks.FollowRepositoryMock)
 	
-	if !s.userRepo.ExistsByID(req.UserID) {
-		return errors.New("user not found")
-	}
-
+	service := NewPostService(postRepoMock, productRepoMock, userRepoMock, followRepoMock)
 	
-	product := &domain.Product{
-		ProductName: req.Product.ProductName,
-		Type:        req.Product.Type,
-		Brand:       req.Product.Brand,
-		Color:       req.Product.Color,
-		Notes:       req.Product.Notes,
+	req := request.CreatePromoPostRequest{
+		UserID: 1,
+		Date:   "15-01-2026",
+		Product: request.ProductRequest{
+			ProductName: "Teste",
+			Type:        "Teste",
+		},
+		Category: 1,
+		Price:    100,
+		HasPromo: true,
+		Discount: 150,
 	}
-
-	if err := s.productRepo.Create(product); err != nil {
-		return err
-	}
-
 	
-	date, err := time.Parse("02-01-2006", req.Date)
-	if err != nil {
-		return errors.New("invalid date format, expected dd-MM-yyyy")
-	}
-
+	userRepoMock.On("ExistsByID", uint(1)).Return(true)
 	
-	post := &domain.Post{
-		UserID:    req.UserID,
-		ProductID: product.ProductID,
-		Date:      date,
-		Category:  req.Category,
-		Price:     req.Price,
-		HasPromo:  false,
-		Discount:  0,
-	}
-
-	return s.postRepo.Create(post)
-}
-
-
-func (s *postServiceImpl) CreatePromoPost(req request.CreatePromoPostRequest) error {
+	err := service.CreatePromoPost(req)
 	
-	if !s.userRepo.ExistsByID(req.UserID) {
-		return errors.New("user not found")
-	}
-
-	
-	if req.Discount < 0 || req.Discount > 100 {
-		return errors.New("discount must be between 0 and 100")
-	}
-
-	
-	product := &domain.Product{
-		ProductName: req.Product.ProductName,
-		Type:        req.Product.Type,
-		Brand:       req.Product.Brand,
-		Color:       req.Product.Color,
-		Notes:       req.Product.Notes,
-	}
-
-	if err := s.productRepo.Create(product); err != nil {
-		return err
-	}
-
-	
-	date, err := time.Parse("02-01-2006", req.Date)
-	if err != nil {
-		return errors.New("invalid date format, expected dd-MM-yyyy")
-	}
-
-	
-	post := &domain.Post{
-		UserID:    req.UserID,
-		ProductID: product.ProductID,
-		Date:      date,
-		Category:  req.Category,
-		Price:     req.Price,
-		HasPromo:  req.HasPromo,
-		Discount:  req.Discount,
-	}
-
-	return s.postRepo.Create(post)
-}
-
-
-func (s *postServiceImpl) GetFollowedPosts(userID uint, order string) (*response.PostListResponse, error) {
-	
-	followed, err := s.followRepo.GetFollowed(userID, "")
-	if err != nil {
-		return nil, err
-	}
-
-	if len(followed) == 0 {
-		return &response.PostListResponse{
-			UserID: userID,
-			Posts:  []response.PostDTO{},
-		}, nil
-	}
-
-	
-	followedIDs := make([]uint, len(followed))
-	for i, u := range followed {
-		followedIDs[i] = u.UserID
-	}
-
-	
-	endDate := time.Now()
-	startDate := endDate.AddDate(0, 0, -14)
-
-	
-	posts, err := s.postRepo.GetPostsByUsersInDateRange(followedIDs, startDate, endDate, order)
-	if err != nil {
-		return nil, err
-	}
-
-	
-	postsDTO := make([]response.PostDTO, len(posts))
-	for i, p := range posts {
-		postsDTO[i] = response.PostDTO{
-			PostID:   p.PostID,
-			UserID:   p.UserID,
-			Date:     p.Date.Format("02-01-2006"),
-			Category: p.Category,
-			Price:    p.Price,
-			HasPromo: p.HasPromo,
-			Discount: p.Discount,
-			Product: response.ProductDTO{
-				ProductID:   p.Product.ProductID,
-				ProductName: p.Product.ProductName,
-				Type:        p.Product.Type,
-				Brand:       p.Product.Brand,
-				Color:       p.Product.Color,
-				Notes:       p.Product.Notes,
-			},
-		}
-	}
-
-	return &response.PostListResponse{
-		UserID: userID,
-		Posts:  postsDTO,
-	}, nil
-}
-
-
-func (s *postServiceImpl) CountPromoProducts(userID uint) (*response.PromoCountResponse, error) {
-	user, err := s.userRepo.FindByID(userID)
-	if err != nil {
-		return nil, err
-	}
-
-	count := s.postRepo.CountPromoPostsByUser(userID)
-
-	return &response.PromoCountResponse{
-		UserID:             user.UserID,
-		UserName:           user.UserName,
-		PromoProductsCount: count,
-	}, nil
-}
-
-func (s *postServiceImpl) GetPromoPostsByUser(userID uint) (*response.PostListResponse, error) {
-	
-	if !s.userRepo.ExistsByID(userID) {
-		return nil, errors.New("user not found")
-	}
-
-	posts, err := s.postRepo.GetPromoPostsByUser(userID)
-	if err != nil {
-		return nil, err
-	}
-
-	postsDTO := make([]response.PostDTO, len(posts))
-	for i, p := range posts {
-		postsDTO[i] = response.PostDTO{
-			PostID:   p.PostID,
-			UserID:   p.UserID,
-			Date:     p.Date.Format("02-01-2006"),
-			Category: p.Category,
-			Price:    p.Price,
-			HasPromo: p.HasPromo,
-			Discount: p.Discount,
-			Product: response.ProductDTO{
-				ProductID:   p.Product.ProductID,
-				ProductName: p.Product.ProductName,
-				Type:        p.Product.Type,
-				Brand:       p.Product.Brand,
-				Color:       p.Product.Color,
-				Notes:       p.Product.Notes,
-			},
-		}
-	}
-
-	return &response.PostListResponse{
-		UserID: userID,
-		Posts:  postsDTO,
-	}, nil
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "discount must be between 0 and 100")
 }
