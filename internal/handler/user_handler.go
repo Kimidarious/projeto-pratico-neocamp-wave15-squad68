@@ -145,7 +145,7 @@ func (h *UserHandler) GetFollowersList(c *gin.Context) {
 // GetFollowedList godoc
 // @Summary      Listar seguidos
 // @Description  Retorna a lista de vendedores que um usuário segue (US-0004, US-0008)
-// @Tags         users-followers
+// @Tags         Follow
 // @Accept       json
 // @Produce      json
 // @Param        id     path      int     true   "ID do usuário"

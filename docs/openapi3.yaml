@@ -1,0 +1,732 @@
+openapi: 3.0.0
+info:
+  contact:
+    email: suporte@socialmeli.com
+    name: Suporte API
+  description: API REST para rede social do Mercado Livre
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+  termsOfService: 'http://swagger.io/terms/'
+  title: SocialMeli API
+  version: '1.0'
+servers:
+  - url: 'http://localhost:8080/api/v1'
+  - url: 'https://localhost:8080/api/v1'
+paths:
+  '/products/followed/{id}/list':
+    get:
+      parameters:
+        - description: ID do usuário
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - description: 'Ordenação: date_asc ou date_desc'
+          in: query
+          name: order
+          schema:
+            default: date_desc
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/response.PostListResponse'
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  type: string
+                type: object
+          description: Bad Request
+        '404':
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  type: string
+                type: object
+          description: Not Found
+      tags:
+        - products
+      description: >-
+        Retorna publicações dos vendedores seguidos nas últimas 2 semanas
+        (US-0006, US-0009)
+      summary: Obter feed de publicações
+  /products/post:
+    post:
+      responses:
+        '201':
+          description: Created
+        '400':
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  type: string
+                type: object
+          description: Bad Request
+      tags:
+        - products
+      description: Cria uma nova publicação de produto (US-0005)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/request.CreatePostRequest'
+        description: Dados da publicação
+        required: true
+      summary: Criar publicação
+  /products/promo-post:
+    post:
+      responses:
+        '201':
+          description: Created
+        '400':
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  type: string
+                type: object
+          description: Bad Request
+      tags:
+        - products
+      description: Cria uma publicação de produto com promoção (US-0010)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/request.CreatePromoPostRequest'
+        description: Dados da publicação promocional
+        required: true
+      summary: Criar publicação promocional
+  '/products/{id}/countPromo':
+    get:
+      parameters:
+        - description: ID do usuário
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/response.PromoCountResponse'
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  type: string
+                type: object
+          description: Bad Request
+        '404':
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  type: string
+                type: object
+          description: Not Found
+      tags:
+        - products
+      description: Retorna a quantidade de produtos promocionais de um vendedor (US-0011)
+      summary: Contar produtos em promoção
+  '/products/{id}/promos':
+    get:
+      parameters:
+        - description: ID do usuário
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/response.PostListResponse'
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  type: string
+                type: object
+          description: Bad Request
+        '404':
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  type: string
+                type: object
+          description: Not Found
+      tags:
+        - products
+      description: Retorna todos os produtos em promoção de um vendedor (US-0012)
+      summary: Listar produtos promocionais
+  /users:
+    get:
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/domain.User'
+                type: array
+          description: OK
+        '500':
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  type: string
+                type: object
+          description: Internal Server Error
+      tags:
+        - users-crud
+      description: Retorna a lista completa de usuários cadastrados
+      summary: Listar todos os usuários
+    post:
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/domain.User'
+          description: Created
+        '400':
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  type: string
+                type: object
+          description: Bad Request
+      tags:
+        - users-crud
+      description: 'Cria um novo usuário no sistema (comprador, vendedor ou ambos)'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/request.CreateUserRequest'
+        description: Dados do usuário
+        required: true
+      summary: Criar novo usuário
+  '/users/{id}':
+    delete:
+      parameters:
+        - description: ID do usuário
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: No Content
+        '400':
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  type: string
+                type: object
+          description: Bad Request
+        '404':
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  type: string
+                type: object
+          description: Not Found
+      tags:
+        - users-crud
+      description: Remove um usuário do sistema
+      summary: Deletar usuário
+    get:
+      parameters:
+        - description: ID do usuário
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/domain.User'
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  type: string
+                type: object
+          description: Bad Request
+        '404':
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  type: string
+                type: object
+          description: Not Found
+      tags:
+        - users-crud
+      description: Retorna os dados de um usuário específico
+      summary: Buscar usuário por ID
+    put:
+      parameters:
+        - description: ID do usuário
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/domain.User'
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  type: string
+                type: object
+          description: Bad Request
+        '404':
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  type: string
+                type: object
+          description: Not Found
+      tags:
+        - users-crud
+      description: Atualiza os dados de um usuário existente
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/request.UpdateUserRequest'
+        description: Dados a atualizar
+        required: true
+      summary: Atualizar usuário
+  '/users/{id}/follow/{userIdToFollow}':
+    post:
+      parameters:
+        - description: ID do usuário que vai seguir
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - description: ID do usuário a ser seguido
+          in: path
+          name: userIdToFollow
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  type: string
+                type: object
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  type: string
+                type: object
+          description: Bad Request
+      tags:
+        - users-follow
+      description: Permite que um usuário siga um vendedor (US-0001)
+      summary: Seguir um vendedor
+  '/users/{id}/followed/list':
+    get:
+      parameters:
+        - description: ID do usuário
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - description: 'Ordenação: name_asc ou name_desc'
+          in: query
+          name: order
+          schema:
+            default: name_asc
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/response.FollowedListResponse'
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  type: string
+                type: object
+          description: Bad Request
+        '404':
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  type: string
+                type: object
+          description: Not Found
+      tags:
+        - users-followers
+      description: 'Retorna a lista de vendedores que um usuário segue (US-0004, US-0008)'
+      summary: Listar seguidos
+  '/users/{id}/followers/count':
+    get:
+      parameters:
+        - description: ID do usuário
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/response.FollowersCountResponse'
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  type: string
+                type: object
+          description: Bad Request
+        '404':
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  type: string
+                type: object
+          description: Not Found
+      tags:
+        - users-followers
+      description: Retorna o número de seguidores de um vendedor (US-0002)
+      summary: Obter contagem de seguidores
+  '/users/{id}/followers/list':
+    get:
+      parameters:
+        - description: ID do usuário
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - description: 'Ordenação: name_asc ou name_desc'
+          in: query
+          name: order
+          schema:
+            default: name_asc
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/response.FollowersListResponse'
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  type: string
+                type: object
+          description: Bad Request
+        '404':
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  type: string
+                type: object
+          description: Not Found
+      tags:
+        - users-followers
+      description: 'Retorna a lista de usuários que seguem um vendedor (US-0003, US-0008)'
+      summary: Listar seguidores
+  '/users/{id}/unfollow/{userIdToFollow}':
+    post:
+      parameters:
+        - description: ID do usuário que vai deixar de seguir
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - description: ID do usuário a ser deixado de seguir
+          in: path
+          name: userIdToFollow
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  type: string
+                type: object
+          description: OK
+        '400':
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  type: string
+                type: object
+          description: Bad Request
+      tags:
+        - users-follow
+      description: Remove o vínculo de follow entre usuários (US-0007)
+      summary: Deixar de seguir um vendedor
+components:
+  schemas:
+    domain.User:
+      properties:
+        created_at:
+          type: string
+        updated_at:
+          type: string
+        user_id:
+          type: integer
+        user_name:
+          type: string
+        user_type:
+          $ref: '#/components/schemas/domain.UserType'
+      type: object
+    domain.UserType:
+      enum:
+        - BUYER
+        - SELLER
+        - BOTH
+      type: string
+      x-enum-varnames:
+        - UserTypeBuyer
+        - UserTypeSeller
+        - UserTypeBoth
+    request.CreatePostRequest:
+      properties:
+        category:
+          type: integer
+        date:
+          type: string
+        price:
+          type: number
+        product:
+          $ref: '#/components/schemas/request.ProductRequest'
+        user_id:
+          type: integer
+      required:
+        - category
+        - date
+        - price
+        - product
+        - user_id
+      type: object
+    request.CreatePromoPostRequest:
+      properties:
+        category:
+          type: integer
+        date:
+          type: string
+        discount:
+          maximum: 100
+          minimum: 0
+          type: number
+        has_promo:
+          type: boolean
+        price:
+          type: number
+        product:
+          $ref: '#/components/schemas/request.ProductRequest'
+        user_id:
+          type: integer
+      required:
+        - category
+        - date
+        - price
+        - product
+        - user_id
+      type: object
+    request.CreateUserRequest:
+      properties:
+        user_name:
+          maxLength: 15
+          minLength: 3
+          type: string
+        user_type:
+          $ref: '#/components/schemas/domain.UserType'
+      required:
+        - user_name
+        - user_type
+      type: object
+    request.ProductRequest:
+      properties:
+        brand:
+          maxLength: 50
+          type: string
+        color:
+          maxLength: 20
+          type: string
+        notes:
+          type: string
+        product_name:
+          maxLength: 40
+          type: string
+        type:
+          maxLength: 15
+          type: string
+      required:
+        - product_name
+        - type
+      type: object
+    request.UpdateUserRequest:
+      properties:
+        user_name:
+          maxLength: 15
+          minLength: 3
+          type: string
+        user_type:
+          $ref: '#/components/schemas/domain.UserType'
+      type: object
+    response.FollowedListResponse:
+      properties:
+        followed:
+          items:
+            $ref: '#/components/schemas/response.UserDTO'
+          type: array
+        user_id:
+          type: integer
+        user_name:
+          type: string
+      type: object
+    response.FollowersCountResponse:
+      properties:
+        followers_count:
+          type: integer
+        user_id:
+          type: integer
+        user_name:
+          type: string
+      type: object
+    response.FollowersListResponse:
+      properties:
+        followers:
+          items:
+            $ref: '#/components/schemas/response.UserDTO'
+          type: array
+        user_id:
+          type: integer
+        user_name:
+          type: string
+      type: object
+    response.PostDTO:
+      properties:
+        category:
+          type: integer
+        date:
+          type: string
+        discount:
+          type: number
+        has_promo:
+          type: boolean
+        post_id:
+          type: integer
+        price:
+          type: number
+        product:
+          $ref: '#/components/schemas/response.ProductDTO'
+        user_id:
+          type: integer
+      type: object
+    response.PostListResponse:
+      properties:
+        posts:
+          items:
+            $ref: '#/components/schemas/response.PostDTO'
+          type: array
+        user_id:
+          type: integer
+      type: object
+    response.ProductDTO:
+      properties:
+        brand:
+          type: string
+        color:
+          type: string
+        notes:
+          type: string
+        product_id:
+          type: integer
+        product_name:
+          type: string
+        type:
+          type: string
+      type: object
+    response.PromoCountResponse:
+      properties:
+        promo_products_count:
+          type: integer
+        user_id:
+          type: integer
+        user_name:
+          type: string
+      type: object
+    response.UserDTO:
+      properties:
+        user_id:
+          type: integer
+        user_name:
+          type: string
+      type: object
+

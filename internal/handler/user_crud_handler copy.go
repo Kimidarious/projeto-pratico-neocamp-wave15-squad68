@@ -22,7 +22,7 @@ func NewUserCRUDHandler(userService service.UserService) *UserCRUDHandler {
 // CreateUser godoc
 // @Summary      Criar novo usuário
 // @Description  Cria um novo usuário no sistema (comprador, vendedor ou ambos)
-// @Tags         users-crud
+// @Tags         Users
 // @Accept       json
 // @Produce      json
 // @Param        user  body      request.CreateUserRequest  true  "Dados do usuário"
