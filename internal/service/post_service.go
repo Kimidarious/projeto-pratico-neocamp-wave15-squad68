@@ -46,6 +46,10 @@ func (s *postServiceImpl) CreatePost(req request.CreatePostRequest) error {
 		return errors.New("user not found")
 	}
 
+	date, err := time.Parse("02-01-2006", req.Date)
+	if err != nil {
+		return errors.New("invalid date format, expected dd-MM-yyyy")
+	}
 	
 	product := &domain.Product{
 		ProductName: req.Product.ProductName,
@@ -60,10 +64,10 @@ func (s *postServiceImpl) CreatePost(req request.CreatePostRequest) error {
 	}
 
 	
-	date, err := time.Parse("02-01-2006", req.Date)
-	if err != nil {
-		return errors.New("invalid date format, expected dd-MM-yyyy")
-	}
+	// date, err := time.Parse("02-01-2006", req.Date)
+	// if err != nil {
+	// 	return errors.New("invalid date format, expected dd-MM-yyyy")
+	// }
 
 	
 	post := &domain.Post{
