@@ -28,22 +28,20 @@ func NewFollowService(followRepo repository.FollowRepository, userRepo repositor
 	}
 }
 
-
 func (s *followServiceImpl) FollowUser(followerID, followedID uint) error {
-	
+
 	if followerID == followedID {
 		return errors.New("cannot follow yourself")
 	}
 
-	
 	if !s.userRepo.ExistsByID(followerID) {
 		return errors.New("follower user not found")
 	}
+
 	if !s.userRepo.ExistsByID(followedID) {
 		return errors.New("followed user not found")
 	}
 
-	
 	if s.followRepo.IsFollowing(followerID, followedID) {
 		return errors.New("already following this user")
 	}
@@ -56,21 +54,18 @@ func (s *followServiceImpl) FollowUser(followerID, followedID uint) error {
 	return s.followRepo.Create(follow)
 }
 
-
 func (s *followServiceImpl) UnfollowUser(followerID, followedID uint) error {
-	
+
 	if followerID == followedID {
 		return errors.New("cannot unfollow yourself")
 	}
 
-	
 	if !s.followRepo.IsFollowing(followerID, followedID) {
 		return errors.New("not following this user")
 	}
 
 	return s.followRepo.Delete(followerID, followedID)
 }
-
 
 func (s *followServiceImpl) GetFollowersCount(userID uint) (*response.FollowersCountResponse, error) {
 	user, err := s.userRepo.FindByID(userID)
@@ -87,7 +82,6 @@ func (s *followServiceImpl) GetFollowersCount(userID uint) (*response.FollowersC
 	}, nil
 }
 
-
 func (s *followServiceImpl) GetFollowersList(userID uint, order string) (*response.FollowersListResponse, error) {
 	user, err := s.userRepo.FindByID(userID)
 	if err != nil {
@@ -99,7 +93,6 @@ func (s *followServiceImpl) GetFollowersList(userID uint, order string) (*respon
 		return nil, err
 	}
 
-	
 	followersDTO := make([]response.UserDTO, len(followers))
 	for i, f := range followers {
 		followersDTO[i] = response.UserDTO{
@@ -115,7 +108,6 @@ func (s *followServiceImpl) GetFollowersList(userID uint, order string) (*respon
 	}, nil
 }
 
-
 func (s *followServiceImpl) GetFollowedList(userID uint, order string) (*response.FollowedListResponse, error) {
 	user, err := s.userRepo.FindByID(userID)
 	if err != nil {
@@ -127,7 +119,6 @@ func (s *followServiceImpl) GetFollowedList(userID uint, order string) (*respons
 		return nil, err
 	}
 
-	
 	followedDTO := make([]response.UserDTO, len(followed))
 	for i, f := range followed {
 		followedDTO[i] = response.UserDTO{

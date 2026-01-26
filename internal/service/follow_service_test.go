@@ -169,6 +169,13 @@ func TestGetFollowersList_OrderNameDesc(t *testing.T) {
 	followRepoMock.AssertExpectations(t)
 }
 
+func TestUnfollowUser_NotUnfollowYourself(t *testing.T) {
+	fs := followServiceImpl{}
+	err := fs.UnfollowUser(1, 1)
+	assert.Error(t, err, "cannot unfollow yourself")
+
+}
+
 func TestUnfollowUser_NotFollowing(t *testing.T) {
 	t.Log("US0007: Unfollow - erro quando não segue")
 	followRepoMock := new(mocks.FollowRepositoryMock)
