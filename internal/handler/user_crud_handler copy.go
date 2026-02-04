@@ -37,7 +37,7 @@ func (h *UserCRUDHandler) CreateUser(c *gin.Context) {
 		return
 	}
 
-	user, err := h.userService.CreateUser(req.UserName, req.UserType)
+	user, err := h.userService.CreateUser(req.UserName, req.UserType, req.Password)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -117,7 +117,7 @@ func (h *UserCRUDHandler) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	user, err := h.userService.UpdateUser(uint(id), req.UserName, req.UserType)
+	user, err := h.userService.UpdateUser(uint(id), req.UserName, req.UserType, req.Password)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

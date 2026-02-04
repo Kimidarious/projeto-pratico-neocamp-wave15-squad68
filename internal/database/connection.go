@@ -23,18 +23,18 @@ type Config struct {
 
 func LoadConfig() *Config {
 	return &Config{
-		Host:     getEnv("DB_HOST", "localhost"),
-		Port:     getEnv("DB_PORT", "5432"),
-		User:     getEnv("DB_USER", "kim"),
-		Password: getEnv("DB_PASSWORD", "kim78%"),
-		DBName:   getEnv("DB_NAME", "apiSocialMeli"),
-		SSLMode:  getEnv("DB_SSLMODE", "disable"),
+		Host:     getEnv("DB_HOST", "ABC"),
+		Port:     getEnv("DB_PORT", "8888"),
+		User:     getEnv("DB_USER", "luiz"),
+		Password: getEnv("DB_PASSWORD", "1234"),
+		DBName:   getEnv("DB_NAME", "casa"),
+		SSLMode:  getEnv("DB_SSLMODE", "teste"),
 	}
 }
 
 func Connect() (*gorm.DB, error) {
 	cfg := LoadConfig()
-	
+
 	if cfg.User == "" {
 		return nil, fmt.Errorf("DB_USER environment variable is required")
 	}
@@ -67,7 +67,6 @@ func Connect() (*gorm.DB, error) {
 	return db, nil
 }
 
-
 func AutoMigrate(db *gorm.DB, models ...interface{}) error {
 	return db.AutoMigrate(models...)
 }
@@ -84,7 +83,9 @@ func Close() error {
 }
 
 func getEnv(key, fallback string) string {
-	if value := os.Getenv(key); value != "" {
+	value := os.Getenv(key)
+
+	if value != "" {
 		return value
 	}
 	return fallback

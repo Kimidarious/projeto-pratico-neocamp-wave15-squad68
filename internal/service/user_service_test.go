@@ -18,16 +18,18 @@ func TestCreateUser_Success(t *testing.T) {
 
 	userName := "joao"
 	userType := domain.UserTypeBuyer
+	password := "senha123"
 
 	userRepoMock.On("FindByUsername", userName).Return(nil, errors.New("not found"))
 	userRepoMock.On("Create", mock.AnythingOfType("*domain.User")).Return(nil)
 
-	user, err := service.CreateUser(userName, userType)
+	user, err := service.CreateUser(userName, userType, password)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, user)
 	assert.Equal(t, userName, user.UserName)
 	assert.Equal(t, domain.UserTypeBuyer, user.UserType)
+	assert.NotEmpty(t, user.Password) // Verifica que a senha foi hasheada
 
 	userRepoMock.AssertExpectations(t)
 }
@@ -39,6 +41,7 @@ func TestCreateUser_DuplicateUsername(t *testing.T) {
 
 	userName := "joao"
 	userType := domain.UserTypeBuyer
+	password := "senha123"
 
 	existingUser := &domain.User{
 		UserID:   1,
@@ -47,7 +50,7 @@ func TestCreateUser_DuplicateUsername(t *testing.T) {
 	}
 	userRepoMock.On("FindByUsername", userName).Return(existingUser, nil)
 
-	user, err := service.CreateUser(userName, userType)
+	user, err := service.CreateUser(userName, userType, password)
 
 	assert.Error(t, err)
 	assert.Nil(t, user)
@@ -63,10 +66,11 @@ func TestCreateUser_InvalidUserType(t *testing.T) {
 
 	userName := "joao"
 	userType := domain.UserType("INVALID")
+	password := "senha123"
 
 	userRepoMock.On("FindByUsername", userName).Return(nil, errors.New("not found"))
 
-	user, err := service.CreateUser(userName, userType)
+	user, err := service.CreateUser(userName, userType, password)
 
 	assert.Error(t, err)
 	assert.Nil(t, user)
@@ -160,7 +164,7 @@ func TestUpdateUser_Success(t *testing.T) {
 	userRepoMock.On("FindByID", userID).Return(existing, nil)
 	userRepoMock.On("Update", mock.AnythingOfType("*domain.User")).Return(nil)
 
-	user, err := service.UpdateUser(userID, "carlos", domain.UserTypeSeller)
+	user, err := service.UpdateUser(userID, "carlos", domain.UserTypeSeller, "")
 
 	assert.NoError(t, err)
 	assert.NotNil(t, user)
@@ -183,7 +187,7 @@ func TestUpdateUser_InvalidUserType(t *testing.T) {
 
 	userRepoMock.On("FindByID", userID).Return(existing, nil)
 
-	user, err := service.UpdateUser(userID, "carlos", domain.UserType("INVALID"))
+	user, err := service.UpdateUser(userID, "carlos", domain.UserType("INVALID"), "")
 
 	assert.Error(t, err)
 	assert.Nil(t, user)
@@ -200,7 +204,7 @@ func TestUpdateUser_NotFound(t *testing.T) {
 
 	userRepoMock.On("FindByID", userID).Return(nil, errors.New("user not found"))
 
-	user, err := service.UpdateUser(userID, "carlos", domain.UserTypeSeller)
+	user, err := service.UpdateUser(userID, "carlos", domain.UserTypeSeller, "")
 
 	assert.Error(t, err)
 	assert.Nil(t, user)

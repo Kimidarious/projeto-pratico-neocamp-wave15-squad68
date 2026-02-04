@@ -16,7 +16,9 @@
 package main
 
 import (
+	"fmt"
 	"log"
+	"net/url"
 	"os"
 	"path/filepath"
 
@@ -27,7 +29,6 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 
 	"github.com/Kimidarious/projeto-pratico-neocamp-wave15-squad68.git/internal/database"
-	"github.com/Kimidarious/projeto-pratico-neocamp-wave15-squad68.git/internal/domain"
 	"github.com/Kimidarious/projeto-pratico-neocamp-wave15-squad68.git/internal/handler"
 	"github.com/Kimidarious/projeto-pratico-neocamp-wave15-squad68.git/internal/middleware"
 	"github.com/Kimidarious/projeto-pratico-neocamp-wave15-squad68.git/internal/repository"
@@ -45,18 +46,22 @@ func main() {
 	}
 	defer database.Close()
 
-	log.Println("🔄 Running migrations...")
-	if err := database.AutoMigrate(
-		db,
-		&domain.User{},
-		&domain.Follow{},
-		&domain.Product{},
-		&domain.Post{},
-	); err != nil {
-		log.Fatalf("❌ Failed to migrate database: %v", err)
-	}
-	log.Println("✅ Migrations completed successfully")
+	cfg := database.LoadConfig()
+	// Escapar caracteres especiais na URL (como %, @, etc.)
+	databaseURL := fmt.Sprintf(
+		"postgres://%s:%s@%s:%s/%s?sslmode=%s",
+		url.QueryEscape(cfg.User),
+		url.QueryEscape(cfg.Password),
+		cfg.Host,
+		cfg.Port,
+		cfg.DBName,
+		cfg.SSLMode,
+	)
 
+	if err := database.RunMigrations(databaseURL); err != nil {
+		log.Fatalf("❌ Failed to run migrations: %v", err)
+	}
+	
 	userRepo := repository.NewUserRepository(db)
 	followRepo := repository.NewFollowRepository(db)
 	productRepo := repository.NewProductRepository(db)
