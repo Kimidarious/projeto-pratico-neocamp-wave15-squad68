@@ -1,1 +1,42 @@
+# Environment variables
 .env
+.env.local
+.env.*.local
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Go build artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+/vendor/
+/Godeps/
+
+# Coverage
+coverage.out
+*.coverprofile
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.settings/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Binaries
+bin/
+dist/
