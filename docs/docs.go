@@ -23,6 +23,58 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/auth/login": {
+            "post": {
+                "description": "Autentica um usuário e retorna um token JWT",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Fazer login",
+                "parameters": [
+                    {
+                        "description": "Credenciais de login",
+                        "name": "credentials",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.LoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.LoginResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/products/followed/{id}/list": {
             "get": {
                 "description": "Retorna publicações dos vendedores seguidos nas últimas 2 semanas (US-0006, US-0009)",
@@ -82,6 +134,11 @@ const docTemplate = `{
         },
         "/products/post": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Cria uma nova publicação de produto (US-0005)",
                 "consumes": [
                     "application/json"
@@ -116,12 +173,26 @@ const docTemplate = `{
                                 "type": "string"
                             }
                         }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
                     }
                 }
             }
         },
         "/products/promo-post": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Cria uma publicação de produto com promoção (US-0010)",
                 "consumes": [
                     "application/json"
@@ -150,6 +221,15 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -303,7 +383,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "users-crud"
+                    "Users"
                 ],
                 "summary": "Criar novo usuário",
                 "parameters": [
@@ -386,6 +466,11 @@ const docTemplate = `{
                 }
             },
             "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Atualiza os dados de um usuário existente",
                 "consumes": [
                     "application/json"
@@ -431,6 +516,15 @@ const docTemplate = `{
                             }
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
                     "404": {
                         "description": "Not Found",
                         "schema": {
@@ -443,6 +537,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Remove um usuário do sistema",
                 "consumes": [
                     "application/json"
@@ -476,6 +575,15 @@ const docTemplate = `{
                             }
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
                     "404": {
                         "description": "Not Found",
                         "schema": {
@@ -490,6 +598,11 @@ const docTemplate = `{
         },
         "/users/{id}/follow/{userIdToFollow}": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Permite que um usuário siga um vendedor (US-0001)",
                 "consumes": [
                     "application/json"
@@ -535,6 +648,15 @@ const docTemplate = `{
                                 "type": "string"
                             }
                         }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
                     }
                 }
             }
@@ -549,7 +671,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "users-followers"
+                    "Follow"
                 ],
                 "summary": "Listar seguidos",
                 "parameters": [
@@ -705,6 +827,11 @@ const docTemplate = `{
         },
         "/users/{id}/unfollow/{userIdToFollow}": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Remove o vínculo de follow entre usuários (US-0007)",
                 "consumes": [
                     "application/json"
@@ -744,6 +871,15 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -854,10 +990,16 @@ const docTemplate = `{
         "request.CreateUserRequest": {
             "type": "object",
             "required": [
+                "password",
                 "user_name",
                 "user_type"
             ],
             "properties": {
+                "password": {
+                    "type": "string",
+                    "maxLength": 72,
+                    "minLength": 6
+                },
                 "user_name": {
                     "type": "string",
                     "maxLength": 15,
@@ -865,6 +1007,21 @@ const docTemplate = `{
                 },
                 "user_type": {
                     "$ref": "#/definitions/domain.UserType"
+                }
+            }
+        },
+        "request.LoginRequest": {
+            "type": "object",
+            "required": [
+                "password",
+                "user_name"
+            ],
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "user_name": {
+                    "type": "string"
                 }
             }
         },
@@ -899,6 +1056,11 @@ const docTemplate = `{
         "request.UpdateUserRequest": {
             "type": "object",
             "properties": {
+                "password": {
+                    "type": "string",
+                    "maxLength": 72,
+                    "minLength": 6
+                },
                 "user_name": {
                     "type": "string",
                     "maxLength": 15,
@@ -954,6 +1116,23 @@ const docTemplate = `{
                 },
                 "user_name": {
                     "type": "string"
+                }
+            }
+        },
+        "response.LoginResponse": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                },
+                "user_name": {
+                    "type": "string"
+                },
+                "user_type": {
+                    "$ref": "#/definitions/domain.UserType"
                 }
             }
         },
@@ -1047,6 +1226,14 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "description": "Digite \"Bearer\" seguido de um espaço e depois o token JWT",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }`

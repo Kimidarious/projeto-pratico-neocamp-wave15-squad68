@@ -29,6 +29,8 @@ func NewProductHandler(postService service.PostService) *ProductHandler {
 // @Param        post  body  request.CreatePostRequest  true  "Dados da publicação"
 // @Success      201
 // @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Security     BearerAuth
 // @Router       /products/post [post]
 func (h *ProductHandler) CreatePost(c *gin.Context) {
 	var req request.CreatePostRequest
@@ -55,6 +57,8 @@ func (h *ProductHandler) CreatePost(c *gin.Context) {
 // @Param        post  body  request.CreatePromoPostRequest  true  "Dados da publicação promocional"
 // @Success      201
 // @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Security     BearerAuth
 // @Router       /products/promo-post [post]
 func (h *ProductHandler) CreatePromoPost(c *gin.Context) {
 	var req request.CreatePromoPostRequest

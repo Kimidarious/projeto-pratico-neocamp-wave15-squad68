@@ -12,6 +12,11 @@
 // @host      localhost:8080
 // @BasePath  /api/v1
 
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Digite "Bearer" seguido de um espaço e depois o token JWT
+
 // @schemes http https
 package main
 
@@ -47,7 +52,7 @@ func main() {
 	defer database.Close()
 
 	cfg := database.LoadConfig()
-	// Escapar caracteres especiais na URL (como %, @, etc.)
+	
 	databaseURL := fmt.Sprintf(
 		"postgres://%s:%s@%s:%s/%s?sslmode=%s",
 		url.QueryEscape(cfg.User),
@@ -70,10 +75,12 @@ func main() {
 	userService := service.NewUserService(userRepo)
 	followService := service.NewFollowService(followRepo, userRepo)
 	postService := service.NewPostService(postRepo, productRepo, userRepo, followRepo)
+	authService := service.NewAuthService(userRepo)
 
 	userCRUDHandler := handler.NewUserCRUDHandler(userService)
 	userHandler := handler.NewUserHandler(followService)
 	productHandler := handler.NewProductHandler(postService)
+	authHandler := handler.NewAuthHandler(authService)
 
 	r := gin.Default()
 
@@ -89,6 +96,12 @@ func main() {
 
 	v1 := r.Group("/api/v1")
 	{
+		// Rotas de autenticação (públicas)
+		auth := v1.Group("/auth")
+		{
+			auth.POST("/login", authHandler.Login)
+		}
+
 		users := v1.Group("/users")
 		{
 

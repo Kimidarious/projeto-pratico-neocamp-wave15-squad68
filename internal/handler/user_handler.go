@@ -30,6 +30,8 @@ func NewUserHandler(followService service.FollowService) *UserHandler {
 // @Param        userIdToFollow  path      int  true  "ID do usuário a ser seguido"
 // @Success      200             {object}  map[string]string
 // @Failure      400             {object}  map[string]string
+// @Failure      401             {object}  map[string]string
+// @Security     BearerAuth
 // @Router       /users/{id}/follow/{userIdToFollow} [post]
 func (h *UserHandler) FollowUser(c *gin.Context) {
 	followerID, err := strconv.ParseUint(c.Param("id"), 10, 32)
@@ -62,6 +64,8 @@ func (h *UserHandler) FollowUser(c *gin.Context) {
 // @Param        userIdToFollow  path      int  true  "ID do usuário a ser deixado de seguir"
 // @Success      200             {object}  map[string]string
 // @Failure      400             {object}  map[string]string
+// @Failure      401             {object}  map[string]string
+// @Security     BearerAuth
 // @Router       /users/{id}/unfollow/{userIdToFollow} [post]
 func (h *UserHandler) UnfollowUser(c *gin.Context) {
 	followerID, err := strconv.ParseUint(c.Param("id"), 10, 32)

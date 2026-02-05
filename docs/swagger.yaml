@@ -69,6 +69,10 @@ definitions:
     type: object
   request.CreateUserRequest:
     properties:
+      password:
+        maxLength: 72
+        minLength: 6
+        type: string
       user_name:
         maxLength: 15
         minLength: 3
@@ -76,8 +80,19 @@ definitions:
       user_type:
         $ref: '#/definitions/domain.UserType'
     required:
+    - password
     - user_name
     - user_type
+    type: object
+  request.LoginRequest:
+    properties:
+      password:
+        type: string
+      user_name:
+        type: string
+    required:
+    - password
+    - user_name
     type: object
   request.ProductRequest:
     properties:
@@ -101,6 +116,10 @@ definitions:
     type: object
   request.UpdateUserRequest:
     properties:
+      password:
+        maxLength: 72
+        minLength: 6
+        type: string
       user_name:
         maxLength: 15
         minLength: 3
@@ -138,6 +157,17 @@ definitions:
         type: integer
       user_name:
         type: string
+    type: object
+  response.LoginResponse:
+    properties:
+      token:
+        type: string
+      user_id:
+        type: integer
+      user_name:
+        type: string
+      user_type:
+        $ref: '#/definitions/domain.UserType'
     type: object
   response.PostDTO:
     properties:
@@ -211,6 +241,40 @@ info:
   title: SocialMeli API
   version: "1.0"
 paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Autentica um usuário e retorna um token JWT
+      parameters:
+      - description: Credenciais de login
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/request.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Fazer login
+      tags:
+      - auth
   /products/{id}/countPromo:
     get:
       consumes:
@@ -339,6 +403,14 @@ paths:
             additionalProperties:
               type: string
             type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
       summary: Criar publicação
       tags:
       - products
@@ -365,6 +437,14 @@ paths:
             additionalProperties:
               type: string
             type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
       summary: Criar publicação promocional
       tags:
       - products
@@ -417,7 +497,7 @@ paths:
             type: object
       summary: Criar novo usuário
       tags:
-      - users-crud
+      - Users
   /users/{id}:
     delete:
       consumes:
@@ -440,12 +520,20 @@ paths:
             additionalProperties:
               type: string
             type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
         "404":
           description: Not Found
           schema:
             additionalProperties:
               type: string
             type: object
+      security:
+      - BearerAuth: []
       summary: Deletar usuário
       tags:
       - users-crud
@@ -510,12 +598,20 @@ paths:
             additionalProperties:
               type: string
             type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
         "404":
           description: Not Found
           schema:
             additionalProperties:
               type: string
             type: object
+      security:
+      - BearerAuth: []
       summary: Atualizar usuário
       tags:
       - users-crud
@@ -550,6 +646,14 @@ paths:
             additionalProperties:
               type: string
             type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
       summary: Seguir um vendedor
       tags:
       - users-follow
@@ -590,7 +694,7 @@ paths:
             type: object
       summary: Listar seguidos
       tags:
-      - users-followers
+      - Follow
   /users/{id}/followers/count:
     get:
       consumes:
@@ -693,10 +797,24 @@ paths:
             additionalProperties:
               type: string
             type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
       summary: Deixar de seguir um vendedor
       tags:
       - users-follow
 schemes:
 - http
 - https
+securityDefinitions:
+  BearerAuth:
+    description: Digite "Bearer" seguido de um espaço e depois o token JWT
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

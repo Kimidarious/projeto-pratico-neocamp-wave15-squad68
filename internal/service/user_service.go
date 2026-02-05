@@ -37,12 +37,10 @@ func (s *userServiceImpl) CreateUser(userName string, userType domain.UserType, 
         return nil, errors.New("invalid user type")
     }
     
-    // Validar senha
     if err := utils.IsPasswordValid(password); err != nil {
         return nil, err
     }
     
-    // Hashear senha
     hashedPassword, err := utils.HashPassword(password)
     if err != nil {
         return nil, err
@@ -92,7 +90,6 @@ func (s *userServiceImpl) UpdateUser(id uint, userName string, userType domain.U
         user.UserType = userType
     }
     
-    // Atualizar senha se fornecida
     if password != "" {
         if err := utils.IsPasswordValid(password); err != nil {
             return nil, err
@@ -121,7 +118,6 @@ func (s *userServiceImpl) DeleteUser(id uint) error {
     return s.userRepo.Delete(id)
 }
 
-// ValidatePassword verifica se a senha fornecida corresponde ao hash armazenado
 func (s *userServiceImpl) ValidatePassword(userID uint, password string) error {
     user, err := s.userRepo.FindByID(userID)
     if err != nil {

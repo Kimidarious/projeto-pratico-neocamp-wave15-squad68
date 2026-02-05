@@ -102,7 +102,9 @@ func (h *UserCRUDHandler) GetAllUsers(c *gin.Context) {
 // @Param        user  body      request.UpdateUserRequest  true  "Dados a atualizar"
 // @Success      200   {object}  domain.User
 // @Failure      400   {object}  map[string]string
+// @Failure      401   {object}  map[string]string
 // @Failure      404   {object}  map[string]string
+// @Security     BearerAuth
 // @Router       /users/{id} [put]
 func (h *UserCRUDHandler) UpdateUser(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
@@ -135,7 +137,9 @@ func (h *UserCRUDHandler) UpdateUser(c *gin.Context) {
 // @Param        id   path      int  true  "ID do usuário"
 // @Success      204  "No Content"
 // @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
 // @Failure      404  {object}  map[string]string
+// @Security     BearerAuth
 // @Router       /users/{id} [delete]
 func (h *UserCRUDHandler) DeleteUser(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
