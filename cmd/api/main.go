@@ -102,7 +102,11 @@ func main() {
 			auth.POST("/login", authHandler.Login)
 		}
 
+		// Aplicar middleware de autenticação em todas as rotas protegidas
+		authMiddleware := middleware.AuthMiddleware(authService)
+
 		users := v1.Group("/users")
+		users.Use(authMiddleware)
 		{
 
 			users.POST("/:id/follow/:userIdToFollow", userHandler.FollowUser)
@@ -123,6 +127,7 @@ func main() {
 		}
 
 		products := v1.Group("/products")
+		products.Use(authMiddleware)
 		{
 			products.POST("/post", productHandler.CreatePost)
 
