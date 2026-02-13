@@ -1,8 +1,10 @@
 package middleware
 
 import (
+	"log"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 
@@ -12,6 +14,10 @@ import (
 // AuthMiddleware verifica se o token JWT é válido
 func AuthMiddleware(authService service.AuthService) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		// Log início da request
+		startTime := time.Now()
+		log.Printf("🔐 [AUTH START] %s %s", c.Request.Method, c.Request.URL.Path)
+
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "authorization header required"})
@@ -43,5 +49,15 @@ func AuthMiddleware(authService service.AuthService) gin.HandlerFunc {
 
 		// 5. Continuar para o próximo handler
 		c.Next()
+
+		// Log fim da request com duração
+		duration := time.Since(startTime)
+		log.Printf("✅ [AUTH END] %s %s | Status: %d | Duration: %v | User: %s", 
+			c.Request.Method, 
+			c.Request.URL.Path, 
+			c.Writer.Status(),
+			duration,
+			claims.UserName,
+		)
 	}
 }
